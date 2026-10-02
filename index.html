@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Comma Practice</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,800&family=DM+Sans:wght@400;500;700&display=swap');
+
+:root {
+  color-scheme: dark;
+  --paper: #262624;
+  --paper-2: #30302e;
+  --paper-3: #3d3d3a;
+  --ink: #f0eee6;
+  --accent: #d97757;
+  --accent-2: #7bb38a;
+  --muted: #a8a59b;
+  --rule: #4a4945;
+  --gold: #d4a64a;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{
+  background:var(--paper);
+  background-image:
+    radial-gradient(circle at 20% 30%, rgba(217, 119, 87, 0.05) 0, transparent 50%),
+    radial-gradient(circle at 80% 70%, rgba(123, 179, 138, 0.04) 0, transparent 50%);
+  min-height:100vh;display:flex;flex-direction:column;
+  font-family:'DM Sans',sans-serif;color:var(--ink);
+}
+
+/* top bar */
+#bar{display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--paper-2);border-bottom:1px solid var(--rule);flex-shrink:0}
+#prog-wrap{flex:1;height:8px;background:var(--paper);border:1px solid var(--ink);overflow:hidden}
+#prog{height:100%;width:0%;background:var(--accent-2);transition:width .3s}
+#lv{background:var(--ink);color:var(--paper);font-family:'Fraunces',serif;font-size:12px;font-weight:600;padding:4px 12px;letter-spacing:.04em;white-space:nowrap}
+#lv.review{background:var(--gold)}
+#teacher-toggle{background:transparent;color:var(--ink);border:1px solid var(--ink);padding:5px 12px;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:all .15s}
+#teacher-toggle:hover{background:var(--ink);color:var(--paper)}
+
+#quiz-view{flex:1;display:flex;flex-direction:column}
+#retry-bar{background:var(--accent);color:var(--paper);font-family:'Fraunces',serif;font-style:italic;font-size:14px;font-weight:500;text-align:center;padding:8px;display:none;letter-spacing:.02em}
+#stage{flex:1;padding:24px 18px 40px;display:flex;justify-content:center;align-items:flex-start}
+#card{width:100%;max-width:560px}
+
+/* topic head (above card) */
+#topic-head{margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--rule)}
+#badge{display:inline-block;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.28em;color:var(--accent);margin-bottom:6px}
+#badge.hist{color:var(--accent-2)}
+#badge.review{color:var(--gold)}
+#badge.econ{color:#6a4c93}
+#topic-title{font-family:'Fraunces',serif;font-size:1.7rem;font-weight:600;letter-spacing:-.01em;line-height:1.1;color:var(--ink)}
+#topic-sub{font-family:'Fraunces',serif;font-style:italic;font-size:.95rem;color:var(--muted);margin-top:6px}
+
+/* question card */
+#qhead{background:var(--paper-2);border:1px solid var(--rule);padding:28px 26px 22px;position:relative;margin-top:18px}
+#qnum{position:absolute;top:-12px;left:22px;background:var(--ink);color:var(--paper);padding:3px 14px;font-family:'Fraunces',serif;font-size:.82rem;font-weight:600;letter-spacing:.04em}
+#qimg-wrap{margin:0 0 16px;display:none;border:1px solid var(--rule);background:var(--paper);padding:6px}
+#qimg{display:block;max-width:100%;height:auto;margin:0 auto}
+#qimg-cap{font-family:'DM Sans',sans-serif;font-size:.74rem;color:var(--muted);text-align:center;padding:6px 4px 2px;font-style:italic}
+#qtext{font-family:'Fraunces',serif;font-size:1.18rem;font-weight:500;line-height:1.4;color:var(--ink);padding-top:4px}
+#qsub{font-family:'DM Sans',sans-serif;font-size:.78rem;color:var(--muted);margin-top:8px;letter-spacing:.04em}
+#qsub.multi{color:var(--accent);font-weight:600}
+
+/* options — vertical list, lettered */
+#grid{display:flex;flex-direction:column;gap:8px;background:transparent;border:none;padding:14px 26px 4px;background:var(--paper-2);border-left:1px solid var(--rule);border-right:1px solid var(--rule)}
+.opt{background:var(--paper);border:1px solid var(--rule);padding:13px 16px 13px 50px;cursor:pointer;position:relative;text-align:left;font-family:'DM Sans',sans-serif;font-size:.95rem;color:var(--ink);transition:all .15s;line-height:1.4;display:flex;align-items:center;min-height:50px}
+.opt:hover:not(.locked){background:var(--paper-2);transform:translateX(2px)}
+.num{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:24px;height:24px;border:1px solid var(--ink);display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-weight:600;font-size:.82rem;background:var(--paper-2)}
+.txt{flex:1}
+.opt.selected{background:var(--paper-3);border-color:var(--ink);border-width:2px;padding-left:49px}
+.opt.selected .num{background:var(--ink);color:var(--paper)}
+.opt.ok{background:rgba(123,179,138,.14);border-color:var(--accent-2);color:var(--accent-2);font-weight:500}
+.opt.ok .num{background:var(--accent-2);color:var(--paper);border-color:var(--accent-2)}
+.opt.show{background:rgba(123,179,138,.14);border-color:var(--accent-2);color:var(--accent-2);font-weight:500}
+.opt.show .num{background:var(--accent-2);color:var(--paper);border-color:var(--accent-2)}
+.opt.bad{background:rgba(217,119,87,.14);border-color:var(--accent);color:var(--accent);text-decoration:line-through}
+.opt.bad .num{background:var(--accent);color:var(--paper);border-color:var(--accent)}
+.opt.locked{cursor:default}
+
+/* submit button for multi-select */
+#submit-multi{display:none;margin:8px 0 0;background:var(--ink);color:var(--paper);border:none;padding:11px 22px;font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;width:100%;transition:all .15s}
+#submit-multi:disabled{background:var(--paper-3);color:var(--muted);cursor:not-allowed}
+#submit-multi:not(:disabled):hover{background:var(--accent)}
+
+/* feedback row */
+#frow{padding:14px 26px;display:flex;align-items:flex-start;justify-content:space-between;min-height:54px;gap:12px;background:var(--paper-2);border:1px solid var(--rule);border-top:none}
+#fb-wrap{flex:1;display:flex;flex-direction:column;gap:6px}
+#fb{font-family:'Fraunces',serif;font-size:.95rem;font-weight:600;font-style:italic}
+#fnote{font-family:'Fraunces',serif;font-size:.88rem;color:var(--muted);line-height:1.5;display:none;font-style:italic;padding:8px 12px;background:var(--paper);border-left:3px solid var(--accent-2);margin-top:2px}
+.fbok{color:var(--accent-2)}
+.fbbad{color:var(--accent)}
+.fbpartial{color:var(--gold)}
+#nxt{background:var(--ink);color:var(--paper);border:none;padding:10px 22px;font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;display:none;flex-shrink:0;align-self:center;transition:all .15s}
+#nxt:hover{background:var(--accent)}
+
+/* stats */
+#stats{display:flex;background:var(--paper-2);border:1px solid var(--rule);border-top:none;margin-top:-1px}
+.st{flex:1;text-align:center;padding:12px 4px;border-right:1px solid var(--rule)}
+.st:last-child{border-right:none}
+.sv{font-family:'Fraunces',serif;font-size:1.4rem;font-weight:600;color:var(--ink)}
+.sl{font-family:'DM Sans',sans-serif;font-size:.68rem;color:var(--muted);margin-top:2px;letter-spacing:.12em;text-transform:uppercase}
+
+/* level summary + done */
+#level-summary,#done{display:none;flex-direction:column;align-items:center;padding:36px 26px;text-align:center;background:var(--paper-2);border:1px solid var(--rule);margin-top:18px}
+#level-summary h2,#done h2{font-family:'Fraunces',serif;font-size:1.8rem;font-weight:600;color:var(--ink);margin-bottom:6px;letter-spacing:-.01em}
+#level-summary p,#done p{font-family:'Fraunces',serif;font-style:italic;font-size:.95rem;color:var(--muted);margin-bottom:20px}
+.lv-badge{font-size:50px;margin-bottom:8px;filter:sepia(.2)}
+.lv-tag{display:inline-block;background:var(--ink);color:var(--paper);font-family:'Fraunces',serif;font-size:.82rem;font-weight:600;padding:4px 16px;margin-bottom:14px;letter-spacing:.04em}
+.dg{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;margin-bottom:22px}
+.dc{background:var(--paper);border:1px solid var(--rule);padding:14px}
+.dv{font-family:'Fraunces',serif;font-size:1.6rem;font-weight:600;color:var(--ink)}
+.dl{font-family:'DM Sans',sans-serif;font-size:.68rem;color:var(--muted);margin-top:3px;letter-spacing:.12em;text-transform:uppercase}
+.unlock-msg{font-family:'Fraunces',serif;font-style:italic;font-size:.92rem;color:var(--accent-2);margin-bottom:18px;padding:12px 16px;background:var(--paper);border-left:3px solid var(--accent-2);width:100%;text-align:left}
+.secret-msg{font-family:'Fraunces',serif;font-style:italic;font-size:.95rem;color:var(--gold);margin-bottom:18px;padding:14px 16px;background:var(--paper);border:1px dashed var(--gold);width:100%;text-align:center;letter-spacing:.02em}
+.dbtn{display:block;width:100%;border:none;padding:14px;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;margin-bottom:10px;transition:all .15s}
+.dbtn:last-child{margin-bottom:0}
+.dbtn.primary{background:var(--ink);color:var(--paper)}
+.dbtn.primary:hover{background:var(--accent)}
+.dbtn.secondary{background:transparent;color:var(--ink);border:1px solid var(--ink)}
+.dbtn.secondary:hover{background:var(--ink);color:var(--paper)}
+.dbtn.secret{background:var(--gold);color:var(--paper)}
+.dbtn.secret:hover{background:var(--ink)}
+.dbtn:disabled{opacity:.4;cursor:not-allowed}
+.dbtn:disabled:hover{background:transparent;color:var(--ink)}
+
+/* teacher view */
+#teacher-view{display:none;flex:1;flex-direction:column;background:var(--paper)}
+#tv-toolbar{background:var(--paper-2);border-bottom:1px solid var(--rule);padding:12px 18px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-shrink:0}
+#tv-toolbar h2{font-family:'Fraunces',serif;font-size:1.2rem;font-weight:600;color:var(--ink)}
+#tv-toolbar-right{display:flex;gap:8px}
+.tv-btn{border:none;padding:9px 16px;font-family:'DM Sans',sans-serif;font-size:.74rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:all .15s}
+.tv-btn.primary{background:var(--ink);color:var(--paper)}
+.tv-btn.primary:hover{background:var(--accent)}
+.tv-btn.secondary{background:transparent;color:var(--ink);border:1px solid var(--ink)}
+.tv-btn.secondary:hover{background:var(--ink);color:var(--paper)}
+#tv-scroll{flex:1;overflow-y:auto;padding:18px}
+
+.qcard{background:var(--paper-2);border:1px solid var(--rule);margin-bottom:12px;overflow:hidden}
+.qcard-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;cursor:pointer;gap:10px;border-bottom:1px solid transparent}
+.qcard-header:hover{background:var(--paper-3)}
+.qcard-num{font-family:'Fraunces',serif;font-size:.78rem;font-weight:600;color:var(--muted);letter-spacing:.04em;flex-shrink:0}
+.qcard-preview{font-family:'DM Sans',sans-serif;font-size:.88rem;color:var(--ink);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.qcard-lv{font-family:'DM Sans',sans-serif;font-size:.68rem;font-weight:700;padding:3px 9px;background:var(--ink);color:var(--paper);letter-spacing:.08em;text-transform:uppercase;flex-shrink:0}
+.qcard-tag{font-family:'DM Sans',sans-serif;font-size:.62rem;font-weight:700;padding:3px 7px;background:var(--accent);color:var(--paper);letter-spacing:.08em;text-transform:uppercase;flex-shrink:0}
+.qcard-del{background:transparent;border:1px solid var(--accent);padding:5px 10px;font-family:'DM Sans',sans-serif;font-size:.68rem;font-weight:700;color:var(--accent);cursor:pointer;flex-shrink:0;letter-spacing:.06em;text-transform:uppercase;transition:all .15s}
+.qcard-del:hover{background:var(--accent);color:var(--paper)}
+.qcard-body{padding:14px 16px;display:none;flex-direction:column;gap:12px;border-top:1px solid var(--rule);background:var(--paper)}
+.qcard-body.open{display:flex}
+.field-label{font-family:'DM Sans',sans-serif;font-size:.68rem;font-weight:700;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-bottom:5px}
+.field-input{width:100%;padding:10px 12px;border:1px solid var(--rule);background:var(--paper-2);color:var(--ink);outline:none;font-family:'DM Sans',sans-serif;font-size:.92rem;-webkit-appearance:none}
+.field-input:focus{border-color:var(--accent);background:var(--paper)}
+textarea.field-input{resize:vertical;min-height:64px;line-height:1.5;font-family:'Fraunces',serif;font-style:italic}
+.type-pills,.lv-pills{display:flex;gap:6px;flex-wrap:wrap}
+.type-pill,.lv-pill{border:1px solid var(--rule);padding:5px 12px;font-family:'DM Sans',sans-serif;font-size:.74rem;font-weight:600;color:var(--muted);cursor:pointer;background:var(--paper-2);letter-spacing:.04em;transition:all .15s}
+.type-pill.active{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.lv-pill.active{background:var(--accent-2);color:var(--paper);border-color:var(--accent-2)}
+.opts-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.opt-wrap{display:flex;flex-direction:column;gap:4px}
+#add-btn{display:block;width:100%;background:transparent;border:2px dashed var(--accent);padding:14px;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:700;color:var(--accent);cursor:pointer;text-align:center;letter-spacing:.1em;text-transform:uppercase;margin-top:6px;margin-bottom:18px;transition:all .15s}
+#add-btn:hover{background:var(--accent);color:var(--paper);border-style:solid}
+
+@media (max-width:540px){
+  #stage{padding:18px 14px 30px}
+  #qhead{padding:24px 18px 18px}
+  #qtext{font-size:1.08rem}
+  #grid{padding:12px 18px 4px}
+  #frow{padding:12px 18px}
+  #stats .sv{font-size:1.2rem}
+}
+</style>
+</head>
+<body>
+
+<div id="bar">
+  <div id="prog-wrap"><div id="prog"></div></div>
+  <div id="lv">Level 1</div>
+  <button id="teacher-toggle">✏ Teacher</button>
+</div>
+
+<div id="quiz-view">
+  <div id="retry-bar">🔁 Retesting cards you missed (no streak XP)</div>
+  <div id="stage">
+    <div id="card">
+      <div id="topic-head">
+        <div id="badge" class="bgeo">Loading</div>
+        <div id="topic-title">Getting ready…</div>
+        <div id="topic-sub"></div>
+      </div>
+      <div id="qhead">
+        <div id="qnum">Q001</div>
+        <div id="qimg-wrap"><img id="qimg" alt=""><div id="qimg-cap"></div></div>
+        <div id="qtext">Getting ready…</div>
+        <div id="qsub"></div>
+      </div>
+      <div id="grid">
+        <div class="opt" id="o0"><div class="num">A</div><div class="txt"></div></div>
+        <div class="opt" id="o1"><div class="num">B</div><div class="txt"></div></div>
+        <div class="opt" id="o2"><div class="num">C</div><div class="txt"></div></div>
+        <div class="opt" id="o3"><div class="num">D</div><div class="txt"></div></div>
+        <div class="opt" id="o4" style="display:none"><div class="num">E</div><div class="txt"></div></div>
+        <button id="submit-multi" disabled>Submit answer</button>
+      </div>
+      <div id="frow">
+        <div id="fb-wrap">
+          <div id="fb"></div>
+          <div id="fnote"></div>
+        </div>
+        <button id="nxt">Next →</button>
+      </div>
+      <div id="stats">
+        <div class="st"><div class="sv" id="sc">0</div><div class="sl">correct</div></div>
+        <div class="st"><div class="sv" id="sr">0</div><div class="sl">retry</div></div>
+        <div class="st"><div class="sv" id="ss">0</div><div class="sl">streak</div></div>
+        <div class="st"><div class="sv" id="sa">—</div><div class="sl">accuracy</div></div>
+      </div>
+
+      <div id="level-summary">
+        <div class="lv-badge" id="ls-emoji">⭐</div>
+        <div class="lv-tag" id="ls-tag">Level 1 Complete!</div>
+        <h2 id="ls-title">Nice work!</h2>
+        <div class="dg">
+          <div class="dc"><div class="dv" id="ls-c">0</div><div class="dl">correct</div></div>
+          <div class="dc"><div class="dv" id="ls-w">0</div><div class="dl">wrong</div></div>
+          <div class="dc"><div class="dv" id="ls-acc">—</div><div class="dl">accuracy</div></div>
+          <div class="dc"><div class="dv" id="ls-xp">0</div><div class="dl">XP earned</div></div>
+        </div>
+        <div class="unlock-msg" id="ls-unlock"></div>
+        <button class="dbtn primary" id="ls-next">Next Level →</button>
+        <button class="dbtn secondary" id="ls-retry">Retry this level</button>
+      </div>
+
+      <div id="done">
+        <div style="font-size:50px;margin-bottom:8px">🏆</div>
+        <h2>All levels complete!</h2>
+        <p id="dsub"></p>
+        <div class="dg">
+          <div class="dc"><div class="dv" id="dc1">0</div><div class="dl">correct</div></div>
+          <div class="dc"><div class="dv" id="dc2">0</div><div class="dl">wrong</div></div>
+          <div class="dc"><div class="dv" id="dc3">—</div><div class="dl">accuracy</div></div>
+          <div class="dc"><div class="dv" id="dc4">0</div><div class="dl">XP earned</div></div>
+        </div>
+        <div class="secret-msg" id="d-secret">✦ Hidden level unlocked: Practice your misses ✦</div>
+        <button class="dbtn secret" id="d-secret-btn">✦ Enter Hidden Level — Practice My Misses</button>
+        <button class="dbtn primary" id="d-again">Play again from Level 1</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="teacher-view">
+  <div id="tv-toolbar">
+    <h2>✏ Question Editor</h2>
+    <div id="tv-toolbar-right">
+      <button class="tv-btn secondary" id="tv-cancel">Cancel</button>
+      <button class="tv-btn primary" id="tv-save">Save & Play</button>
+    </div>
+  </div>
+  <div id="tv-scroll">
+    <div id="qlist"></div>
+    <button id="add-btn">+ Add question</button>
+  </div>
+</div>
+
+<script>
+var LEVEL_INFO=[
+  null,
+  {emoji:"📏",tag:"Commas · Level 1",title:"One Comma",sub:"Opening words and clauses. Where does the comma go?",unlock:"Next: joining two sentences together."},
+  {emoji:"🔗",tag:"Commas · Level 2",title:"Joining Sentences",sub:"Two sentences, one join. Pick the version that holds together.",unlock:"Next: commas that come in pairs."},
+  {emoji:"🧷",tag:"Commas · Level 3",title:"Commas in Pairs",sub:"Side-phrases, which-clauses and long lists.",unlock:"Done. Before you hit a comma, cover it up and ask whether both sides could stand alone."}
+];
+
+var DEFAULT_DATA=[
+
+// ═══ LEVEL 1 — ONE COMMA ═══
+{lv:1,t:"gram",q:"Punctuate this: 'Although the student meant well the outcome was still harmful'",a:"Although the student meant well, the outcome was still harmful.",x:["Although, the student meant well the outcome was still harmful.","Although, the student meant well, the outcome was still harmful.","Although the student, meant well the outcome was still harmful."],note:"The comma goes where the 'although' part ends and the main sentence starts. Never straight after 'Although'."},
+{lv:1,t:"gram",q:"Punctuate this: 'Firstly the client's sleep has worsened'",a:"Firstly, the client's sleep has worsened.",x:["Firstly the client's, sleep has worsened.","Firstly the client's sleep, has worsened.","Firstly the client's sleep has, worsened."],note:"Opening words like Firstly, However, Consequently and Additionally take a comma straight after them."},
+{lv:1,t:"gram",q:"Punctuate this: 'The scholarship was set aside for textbooks and the shortfall left two courses unpaid'",a:"The scholarship was set aside for textbooks, and the shortfall left two courses unpaid.",x:["The scholarship was set aside for textbooks and, the shortfall left two courses unpaid.","The scholarship was set aside for textbooks, and, the shortfall left two courses unpaid.","The scholarship, was set aside for textbooks and the shortfall left two courses unpaid."],note:"Two full sentences joined by 'and': comma BEFORE 'and', never after it."},
+{lv:1,t:"gram",q:"Punctuate this: 'While this option costs little its success depends on the parents agreeing to it'",a:"While this option costs little, its success depends on the parents agreeing to it.",x:["While, this option costs little its success depends on the parents agreeing to it.","While this option costs little its success, depends on the parents agreeing to it.","While this option, costs little its success depends on the parents agreeing to it."],note:"Same pattern as 'Although': opening clause, comma, main sentence."},
+{lv:1,t:"gram",q:"Punctuate this: 'Because the family reacted badly the client withdrew from sessions'",a:"Because the family reacted badly, the client withdrew from sessions.",x:["Because, the family reacted badly the client withdrew from sessions.","Because the family, reacted badly the client withdrew from sessions.","Because the family reacted badly the client, withdrew from sessions."],note:"Opening 'because' clause, then the comma, then the main sentence."},
+{lv:1,t:"gram",q:"Punctuate this: 'Consequently the referral was delayed by three weeks'",a:"Consequently, the referral was delayed by three weeks.",x:["Consequently the referral, was delayed by three weeks.","Consequently the referral was delayed, by three weeks.","Consequently the, referral was delayed by three weeks."],note:"Opening linking word, comma, then the sentence."},
+{lv:1,t:"gram",q:"Punctuate this: 'If the parents agree the school can offer extra support'",a:"If the parents agree, the school can offer extra support.",x:["If, the parents agree the school can offer extra support.","If the parents, agree the school can offer extra support.","If the parents agree the school, can offer extra support."],note:"Without the comma it briefly reads as 'the parents agree the school…'. The comma tells the reader where the 'if' part stops."},
+{lv:1,t:"gram",q:"Punctuate this: 'The counsellor's decision to stay silent has consequences for everyone involved'",a:"The counsellor's decision to stay silent has consequences for everyone involved.",x:["The counsellor's decision to stay silent, has consequences for everyone involved.","The counsellor's decision, to stay silent has consequences for everyone involved.","The counsellor's decision to stay silent has, consequences for everyone involved."],note:"Trick question: no comma at all. A long subject tempts a pause before the verb, but a comma there splits 'decision' from 'has'."},
+
+// ═══ LEVEL 2 — JOINING SENTENCES ═══
+{lv:2,t:"gram",q:"Punctuate this: 'The grant was meant for rent instead it went on a new laptop'",a:"The grant was meant for rent. Instead, it went on a new laptop.",x:["The grant was meant for rent, instead, it went on a new laptop.","The grant was meant for rent, instead it went on a new laptop.","The grant was meant for rent; Instead, it went on a new laptop."],note:"'Instead' can't glue two sentences together with a comma. Full stop, then 'Instead,'."},
+{lv:2,t:"gram",q:"Punctuate this: 'I value the alliance with my client however I also have obligations beyond the room'",a:"I value the alliance with my client; however, I also have obligations beyond the room.",x:["I value the alliance with my client; However, I also have obligations beyond the room.","I value the alliance with my client, however, I also have obligations beyond the room.","I value the alliance with my client, however I also have obligations beyond the room."],note:"Semicolon, lowercase 'however', comma. A full stop and 'However,' also works."},
+{lv:2,t:"gram",q:"Punctuate this: 'The delay led to missed sessions these included two physiotherapy appointments'",a:"The delay led to missed sessions. These included two physiotherapy appointments.",x:["The delay led to missed sessions, these included two physiotherapy appointments.","The delay led to missed sessions, These included two physiotherapy appointments.","The delay led to missed sessions these, included two physiotherapy appointments."],note:"A comma followed by 'this' or 'these' is almost always two sentences squashed together. Use a full stop."},
+{lv:2,t:"gram",multi:true,q:"Select TWO correct ways to punctuate: 'The family reacted badly the client withdrew from sessions'",a:["The family reacted badly, and the client withdrew from sessions.","The family reacted badly; the client withdrew from sessions."],x:["The family reacted badly, the client withdrew from sessions.","The family reacted badly, therefore the client withdrew from sessions.","The family reacted badly, so, the client withdrew from sessions."],note:"Comma + 'and', or a semicolon. A comma on its own (or with 'therefore') can't hold two full sentences together."},
+{lv:2,t:"gram",q:"Punctuate this: 'The workload is heavy however the student wants to keep studying'",a:"The workload is heavy; however, the student wants to keep studying.",x:["The workload is heavy; However, the student wants to keep studying.","The workload is heavy, however, the student wants to keep studying.","The workload is heavy, however the student wants to keep studying."],note:"After a semicolon you're still in the same sentence, so 'however' stays lowercase."},
+{lv:2,t:"gram",multi:true,q:"Select TWO correct ways to punctuate: 'Each referral has a different purpose the GP reviews medication the psychologist assesses mood'",a:["Each referral has a different purpose: the GP reviews medication, and the psychologist assesses mood.","Each referral has a different purpose. The GP reviews medication; the psychologist assesses mood."],x:["Each referral has a different purpose, the GP reviews medication, the psychologist assesses mood.","Each referral has a different purpose; the GP reviews medication, the psychologist assesses mood.","Each referral has a different purpose, the GP reviews medication and, the psychologist assesses mood."],note:"Three sentences are jammed in there, so BOTH joins need fixing. The semicolon option fixes the first join and leaves a comma splice in the second."},
+{lv:2,t:"gram",q:"Punctuate this: 'The plan was agreed upon but nobody followed it'",a:"The plan was agreed upon, but nobody followed it.",x:["The plan was agreed upon but, nobody followed it.","The plan was agreed upon; But nobody followed it.","The plan, was agreed upon but nobody followed it."],note:"Same as 'and': comma BEFORE 'but', never after it."},
+{lv:2,t:"gram",q:"Punctuate this: 'Her sleep has worsened and this may be affecting her concentration'",a:"Her sleep has worsened, and this may be affecting her concentration.",x:["Her sleep has worsened and, this may be affecting her concentration.","Her sleep has worsened, this may be affecting her concentration.","Her sleep has worsened and this, may be affecting her concentration."],note:"Drop the 'and' and you get a comma splice. Keep it, and the comma goes in front of it."},
+
+// ═══ LEVEL 3 — COMMAS IN PAIRS ═══
+{lv:3,t:"gram",q:"Punctuate this: 'The client explained that over the past year she had skipped most of her appointments'",a:"The client explained that, over the past year, she had skipped most of her appointments.",x:["The client explained that, over the past year she had skipped most of her appointments.","The client explained, that over the past year, she had skipped most of her appointments.","The client explained that over the past year she had, skipped most of her appointments."],note:"Open the side-phrase, close the side-phrase. One comma on its own leaves the reader hanging."},
+{lv:3,t:"gram",multi:true,q:"Select TWO correct ways to punctuate: 'She told me that for most of the year she had been working nights'",a:["She told me that, for most of the year, she had been working nights.","She told me that for most of the year she had been working nights."],x:["She told me that, for most of the year she had been working nights.","She told me, that for most of the year she had been working nights.","She told me that for most of the year she had, been working nights."],note:"Both commas or neither. What's never right is just the first one."},
+{lv:3,t:"gram",q:"Punctuate this: 'The decision though well meant has consequences for the whole family'",a:"The decision, though well meant, has consequences for the whole family.",x:["The decision, though well meant has consequences for the whole family.","The decision though well meant, has consequences for the whole family.","The decision though, well meant has consequences for the whole family."],note:"Lift out 'though well meant' and the sentence still works. That's the bit that gets a comma on each side."},
+{lv:3,t:"gram",q:"Punctuate this: 'My supervisor who has twenty years of experience reviewed the case'",a:"My supervisor, who has twenty years of experience, reviewed the case.",x:["My supervisor, who has twenty years of experience reviewed the case.","My supervisor who has twenty years of experience, reviewed the case.","My supervisor who, has twenty years of experience reviewed the case."],note:"Extra info about someone already identified gets a comma on both sides."},
+{lv:3,t:"gram",q:"Punctuate this: 'Students who skip the reading often struggle in tutorials'",a:"Students who skip the reading often struggle in tutorials.",x:["Students, who skip the reading, often struggle in tutorials.","Students who skip the reading, often struggle in tutorials.","Students who skip, the reading often struggle in tutorials."],note:"No commas. With commas it would mean ALL students skip the reading. Without them, it's only the ones who do."},
+{lv:3,t:"gram",q:"Punctuate this: 'I also refer to the agency's policy which requires staff to report safety concerns'",a:"I also refer to the agency's policy, which requires staff to report safety concerns.",x:["I also refer to the agency's policy which, requires staff to report safety concerns.","I also refer to the agency's policy, which requires staff, to report safety concerns.","I also, refer to the agency's policy which requires staff to report safety concerns."],note:"The comma goes BEFORE 'which', never after it."},
+{lv:3,t:"gram",q:"Punctuate this: 'I identify two primary stakeholders the student and her grandfather'",a:"I identify two primary stakeholders: the student and her grandfather.",x:["I identify two primary stakeholders; the student and her grandfather.","I identify two primary stakeholders the student, and her grandfather.","I identify, two primary stakeholders, the student and her grandfather."],note:"A colon introduces the list. A semicolon needs a full sentence on both sides, and 'the student and her grandfather' isn't one."},
+{lv:3,t:"gram",q:"Punctuate this: 'The secondary stakeholders are the school which holds the records the parents who want privacy and the coach who raised the concern'",a:"The secondary stakeholders are the school, which holds the records; the parents, who want privacy; and the coach, who raised the concern.",x:["The secondary stakeholders are the school, which holds the records, the parents, who want privacy, and the coach, who raised the concern.","The secondary stakeholders are the school which holds the records; the parents who want privacy; and the coach who raised the concern.","The secondary stakeholders are the school, which holds the records; the parents, who want privacy, and the coach; who raised the concern."],note:"When the list items already have commas inside them, semicolons separate the items. All commas reads like six items instead of three."},
+
+];
+
+var DATA=DEFAULT_DATA.map(function(d){return JSON.parse(JSON.stringify(d));});
+
+// ──────────────────────────────────────────────────────────────────────
+// STATE
+// ──────────────────────────────────────────────────────────────────────
+var currentLevel=1;
+var MAX_LEVEL=3;
+var deck=[],weak=[],cur=null,answered=false;
+var C=0,W=0,streak=0,xp=0,lvXP=0,qNumInLevel=0;
+var totalC=0,totalW=0,totalXP=0;
+var allMisses=[];      // every miss across the whole run — feeds the secret level
+var inReview=false;    // true when running the secret/hidden review level
+var multiSelected=[];  // for multi-select questions
+
+function shuf(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
+function cardsForLevel(lv){return DATA.filter(function(d){return d.lv===lv;});}
+
+function startLevel(lv){
+  currentLevel=lv;inReview=false;
+  deck=shuf(cardsForLevel(lv).slice());
+  weak=[];C=0;W=0;streak=0;lvXP=0;qNumInLevel=0;
+  hideAll();
+  var info=LEVEL_INFO[lv];
+  var th=document.getElementById("topic-head");
+  th.style.display="block";
+  var b=document.getElementById("badge");
+  b.textContent=info.tag;
+  b.className="";
+  document.getElementById("topic-title").textContent=info.title;
+  document.getElementById("topic-sub").textContent=info.sub;
+  document.getElementById("lv").className="";
+  document.getElementById("qhead").style.display="block";
+  document.getElementById("grid").style.display="flex";
+  document.getElementById("frow").style.display="flex";
+  document.getElementById("stats").style.display="flex";
+  document.getElementById("retry-bar").style.display="none";
+  updateBar();updateStats();
+  next();
+}
+
+function startReviewLevel(){
+  if(!allMisses.length)return;
+  inReview=true;
+  currentLevel=0;
+  // Deduplicate by question text; reset _retry flag so they start clean
+  var seen={},uniq=[];
+  allMisses.forEach(function(c){if(!seen[c.q]){seen[c.q]=1;var copy=JSON.parse(JSON.stringify(c));copy._retry=false;uniq.push(copy);}});
+  deck=shuf(uniq);
+  weak=[];C=0;W=0;streak=0;lvXP=0;qNumInLevel=0;
+  hideAll();
+  var th=document.getElementById("topic-head");
+  th.style.display="block";
+  var b=document.getElementById("badge");
+  b.textContent="✦ Hidden Level · Review";
+  b.className="review";
+  document.getElementById("topic-title").textContent="Practice My Misses";
+  document.getElementById("topic-sub").textContent="Every question you got wrong, once each. Get them all right.";
+  document.getElementById("lv").className="review";
+  document.getElementById("lv").textContent="✦ REVIEW";
+  document.getElementById("qhead").style.display="block";
+  document.getElementById("grid").style.display="flex";
+  document.getElementById("frow").style.display="flex";
+  document.getElementById("stats").style.display="flex";
+  document.getElementById("retry-bar").style.display="none";
+  updateStats();
+  next();
+}
+
+function hideAll(){
+  document.getElementById("topic-head").style.display="none";
+  document.getElementById("qhead").style.display="none";
+  document.getElementById("grid").style.display="none";
+  document.getElementById("frow").style.display="none";
+  document.getElementById("stats").style.display="none";
+  document.getElementById("level-summary").style.display="none";
+  document.getElementById("done").style.display="none";
+}
+
+function next(){
+  answered=false;multiSelected=[];
+  document.getElementById("nxt").style.display="none";
+  document.getElementById("submit-multi").style.display="none";
+  document.getElementById("submit-multi").disabled=true;
+  document.getElementById("fb").textContent="";
+  document.getElementById("fb").className="";
+  document.getElementById("fnote").style.display="none";
+  document.getElementById("fnote").textContent="";
+
+  if(!deck.length&&!weak.length){showLevelSummary();return;}
+  if(!deck.length){
+    deck=shuf(weak.slice());
+    deck.forEach(function(c){c._retry=true;}); // flag so streak doesn't count
+    weak=[];
+    document.getElementById("retry-bar").style.display="block";
+  }
+
+  cur=deck.shift();updateProg();
+  qNumInLevel++;
+  var pad=qNumInLevel<10?"00"+qNumInLevel:(qNumInLevel<100?"0"+qNumInLevel:qNumInLevel);
+  document.getElementById("qnum").textContent="Q"+pad;
+  document.getElementById("qtext").textContent=cur.q;
+
+  // Image if present
+  var iw=document.getElementById("qimg-wrap");
+  var im=document.getElementById("qimg");
+  var ic=document.getElementById("qimg-cap");
+  if(cur.img){
+    iw.style.display="block";
+    im.src=cur.img;
+    im.alt=cur.imgCap||"Source image";
+    ic.textContent=cur.imgCap||"";
+    im.onerror=function(){iw.style.display="none";};
+  } else {
+    iw.style.display="none";
+    im.src="";
+  }
+
+  // Build options (multi-select uses up to 5; single uses 4)
+  var qsub=document.getElementById("qsub");
+  if(cur.multi){
+    qsub.textContent="Select TWO answers, then submit";
+    qsub.className="multi";
+    document.getElementById("submit-multi").style.display="block";
+    var allOpts=cur.a.concat(cur.x);
+    var picked=shuf(allOpts.slice()).slice(0,5);
+    cur._displayOpts=picked;
+    setOptionTexts(picked,true);
+    bindMultiOpts();
+  } else {
+    qsub.textContent="Select the correct answer";
+    qsub.className="";
+    var correct=cur.a;
+    var dists=shuf(cur.x.slice()).slice(0,3);
+    var opts=shuf([correct,dists[0],dists[1],dists[2]]);
+    cur._ca=correct;
+    cur._displayOpts=opts;
+    setOptionTexts(opts,false);
+    bindOpts(correct);
+  }
+}
+
+function setOptionTexts(opts,showFifth){
+  var letters=["A","B","C","D","E"];
+  var count=showFifth?5:4;
+  for(var i=0;i<5;i++){
+    var el=document.getElementById("o"+i);
+    el.className="opt";
+    el.style.display=i<count?"flex":"none";
+    if(i<count){
+      el.querySelector(".num").textContent=letters[i];
+      el.querySelector(".txt").textContent=opts[i]||"";
+      el.dataset.val=opts[i]||"";
+    }
+  }
+}
+
+function showNote(){
+  if(cur.note&&cur.note.trim()){
+    var fn=document.getElementById("fnote");
+    fn.textContent=cur.note;fn.style.display="block";
+  }
+}
+
+function bindOpts(correct){
+  for(var i=0;i<4;i++){
+    (function(el){
+      var newEl=el.cloneNode(true);
+      el.parentNode.replaceChild(newEl,el);
+      function handle(e){if(e.type==="touchend")e.preventDefault();pickSingle(newEl,newEl.dataset.val,correct);}
+      newEl.addEventListener("touchend",handle,{passive:false});
+      newEl.addEventListener("click",handle);
+    })(document.getElementById("o"+i));
+  }
+}
+
+function bindMultiOpts(){
+  for(var i=0;i<5;i++){
+    (function(el){
+      var newEl=el.cloneNode(true);
+      el.parentNode.replaceChild(newEl,el);
+      function handle(e){if(e.type==="touchend")e.preventDefault();toggleMulti(newEl);}
+      newEl.addEventListener("touchend",handle,{passive:false});
+      newEl.addEventListener("click",handle);
+    })(document.getElementById("o"+i));
+  }
+  // Submit button binding
+  var sb=document.getElementById("submit-multi");
+  var newSb=sb.cloneNode(true);
+  sb.parentNode.replaceChild(newSb,sb);
+  function sub(e){if(e.type==="touchend")e.preventDefault();if(!newSb.disabled)submitMulti();}
+  newSb.addEventListener("touchend",sub,{passive:false});
+  newSb.addEventListener("click",sub);
+}
+
+function toggleMulti(el){
+  if(answered)return;
+  var val=el.dataset.val;
+  var idx=multiSelected.indexOf(val);
+  if(idx>=0){multiSelected.splice(idx,1);el.classList.remove("selected");}
+  else{
+    if(multiSelected.length>=2){
+      // Replace oldest selection (FIFO so they can change their mind freely)
+      var oldVal=multiSelected.shift();
+      for(var i=0;i<5;i++){
+        var t=document.getElementById("o"+i);
+        if(t.dataset.val===oldVal)t.classList.remove("selected");
+      }
+    }
+    multiSelected.push(val);el.classList.add("selected");
+  }
+  document.getElementById("submit-multi").disabled=multiSelected.length!==2;
+}
+
+function pickSingle(el,chosen,correct){
+  if(answered)return;answered=true;
+  for(var i=0;i<4;i++){
+    var t=document.getElementById("o"+i);
+    if(t.dataset.val===correct)t.classList.add("show");
+  }
+  var fb=document.getElementById("fb");
+  if(chosen===correct){
+    el.classList.add("ok");el.classList.remove("show");
+    C++;totalC++;
+    // Streak only counts on first-attempt questions (not retries)
+    if(!cur._retry){streak++;}else{/* keep current streak, don't increment */}
+    var bonus=streak>=3?5:0;
+    var earned=15+bonus;
+    xp+=earned;lvXP+=earned;totalXP+=earned;
+    fb.textContent=cur._retry?"✓ Got it on retry (+15 XP, no streak)":(streak>=3?"✓ "+streak+" streak! +"+earned+" XP":"✓ Correct!");
+    fb.className="fbok";
+  } else {
+    el.classList.add("bad");W++;totalW++;streak=0;
+    weak.push(cur);
+    if(!cur._retry){allMisses.push(cur);} // only track first-attempt misses for hidden level
+    fb.textContent="✗ Answer: "+correct;fb.className="fbbad";
+  }
+  showNote();updateStats();updateBar();
+  document.getElementById("nxt").style.display="block";
+}
+
+function submitMulti(){
+  if(answered)return;answered=true;
+  var correctSet=cur.a; // array of correct answers
+  var allCorrectChosen=correctSet.every(function(v){return multiSelected.indexOf(v)>=0;});
+  var noWrongChosen=multiSelected.every(function(v){return correctSet.indexOf(v)>=0;});
+  var fullyCorrect=allCorrectChosen&&noWrongChosen;
+  var partialCount=multiSelected.filter(function(v){return correctSet.indexOf(v)>=0;}).length;
+
+  // Mark all options
+  for(var i=0;i<5;i++){
+    var t=document.getElementById("o"+i);
+    var v=t.dataset.val;
+    t.classList.remove("selected");
+    if(correctSet.indexOf(v)>=0){
+      // Correct option — show green
+      if(multiSelected.indexOf(v)>=0){t.classList.add("ok");}
+      else{t.classList.add("show");}
+    } else if(multiSelected.indexOf(v)>=0){
+      // User picked a wrong one
+      t.classList.add("bad");
+    }
+  }
+
+  var fb=document.getElementById("fb");
+  if(fullyCorrect){
+    C++;totalC++;
+    if(!cur._retry){streak++;}
+    var bonus=streak>=3?5:0;
+    var earned=20+bonus; // multi-select worth slightly more
+    xp+=earned;lvXP+=earned;totalXP+=earned;
+    fb.textContent=cur._retry?"✓ Got it on retry (+20 XP, no streak)":(streak>=3?"✓ Both correct! "+streak+" streak! +"+earned+" XP":"✓ Both correct!");
+    fb.className="fbok";
+  } else {
+    W++;totalW++;streak=0;
+    weak.push(cur);
+    if(!cur._retry){allMisses.push(cur);}
+    var partialMsg="";
+    if(partialCount===1){
+      // Half right — explain which two were actually correct
+      partialMsg="✗ Half right. The two correct answers were: "+correctSet[0]+" + "+correctSet[1];
+      fb.className="fbpartial";
+    } else if(partialCount===0){
+      partialMsg="✗ Neither correct. The answers were: "+correctSet[0]+" + "+correctSet[1];
+      fb.className="fbbad";
+    } else {
+      // partialCount === 2 but with extras? In a 2-pick this can't happen
+      partialMsg="✗ Answer: "+correctSet[0]+" + "+correctSet[1];
+      fb.className="fbbad";
+    }
+    fb.textContent=partialMsg;
+  }
+  showNote();updateStats();updateBar();
+  document.getElementById("submit-multi").style.display="none";
+  document.getElementById("nxt").style.display="block";
+}
+
+function updateBar(){
+  if(!inReview){
+    document.getElementById("lv").textContent="Level "+currentLevel;
+  }
+}
+function updateStats(){
+  document.getElementById("sc").textContent=C;
+  document.getElementById("sr").textContent=weak.length;
+  document.getElementById("ss").textContent=streak;
+  var tot=C+W;document.getElementById("sa").textContent=tot?Math.round(C/tot*100)+"%":"—";
+}
+function updateProg(){
+  var total=C+W+deck.length+weak.length+1;
+  document.getElementById("prog").style.width=Math.round((C+W)/total*100)+"%";
+}
+
+function showLevelSummary(){
+  hideAll();
+  document.getElementById("retry-bar").style.display="none";
+  if(inReview){
+    // Special "review complete" summary
+    var tot=C+W;
+    document.getElementById("ls-emoji").textContent="✦";
+    document.getElementById("ls-tag").textContent="Hidden Level Complete";
+    document.getElementById("ls-title").textContent="Misses Practised";
+    document.getElementById("ls-c").textContent=C;
+    document.getElementById("ls-w").textContent=W;
+    document.getElementById("ls-acc").textContent=tot?Math.round(C/tot*100)+"%":"—";
+    document.getElementById("ls-xp").textContent=lvXP;
+    document.getElementById("ls-unlock").textContent=W===0?"🎯 Clean sweep — you nailed every one.":"You missed "+W+" again. Want another go?";
+    document.getElementById("ls-next").textContent="Back to results";
+    document.getElementById("ls-retry").textContent="Practise misses again";
+    document.getElementById("prog").style.width="100%";
+    document.getElementById("level-summary").style.display="flex";
+    return;
+  }
+  var info=LEVEL_INFO[currentLevel];
+  var tot=C+W;
+  document.getElementById("ls-emoji").textContent=info.emoji;
+  document.getElementById("ls-tag").textContent="Level "+currentLevel+" Complete!";
+  document.getElementById("ls-title").textContent=info.title;
+  document.getElementById("ls-c").textContent=C;
+  document.getElementById("ls-w").textContent=W;
+  document.getElementById("ls-acc").textContent=tot?Math.round(C/tot*100)+"%":"—";
+  document.getElementById("ls-xp").textContent=lvXP;
+  var nextBtn=document.getElementById("ls-next");
+  if(currentLevel>=MAX_LEVEL){
+    document.getElementById("ls-unlock").textContent=info.unlock;
+    nextBtn.textContent="See final results 🏆";
+  } else {
+    document.getElementById("ls-unlock").textContent=info.unlock;
+    nextBtn.textContent="Start Level "+(currentLevel+1)+" →";
+  }
+  document.getElementById("ls-retry").textContent="Retry this level";
+  document.getElementById("prog").style.width="100%";
+  document.getElementById("level-summary").style.display="flex";
+}
+
+function showFinalDone(){
+  hideAll();
+  document.getElementById("done").style.display="flex";
+  var tot=totalC+totalW;
+  document.getElementById("dc1").textContent=totalC;
+  document.getElementById("dc2").textContent=totalW;
+  document.getElementById("dc3").textContent=tot?Math.round(totalC/tot*100)+"%":"—";
+  document.getElementById("dc4").textContent=totalXP;
+  document.getElementById("dsub").textContent="All three comma levels complete!";
+  document.getElementById("prog").style.width="100%";
+  // Hidden level button — only shown if there are misses to practise
+  var secretBtn=document.getElementById("d-secret-btn");
+  var secretMsg=document.getElementById("d-secret");
+  if(allMisses.length>0){
+    secretBtn.style.display="block";
+    secretMsg.style.display="block";
+    secretBtn.textContent="✦ Enter Hidden Level — "+allMisses.length+" miss"+(allMisses.length===1?"":"es")+" to practise";
+  } else {
+    secretBtn.style.display="none";
+    secretMsg.style.display="block";
+    secretMsg.textContent="✦ Perfect run — no hidden level needed ✦";
+  }
+}
+
+wire("nxt",next);
+wire("ls-next",function(){
+  if(inReview){showFinalDone();return;}
+  if(currentLevel>=MAX_LEVEL){showFinalDone();}else{startLevel(currentLevel+1);}
+});
+wire("ls-retry",function(){
+  if(inReview){startReviewLevel();}
+  else{startLevel(currentLevel);}
+});
+wire("d-again",function(){
+  totalC=0;totalW=0;totalXP=0;xp=0;allMisses=[];
+  startLevel(1);
+});
+wire("d-secret-btn",startReviewLevel);
+
+// ── teacher editor (unchanged structurally; supports new fields) ──
+wire("teacher-toggle",function(){
+  var tv=document.getElementById("teacher-view");
+  if(tv.style.display==="flex"){showQuiz();}else{showTeacher();}
+});
+function showQuiz(){
+  document.getElementById("quiz-view").style.display="flex";
+  document.getElementById("teacher-view").style.display="none";
+}
+function showTeacher(){
+  document.getElementById("quiz-view").style.display="none";
+  document.getElementById("teacher-view").style.display="flex";
+  renderEditor();
+}
+wire("tv-save",function(){
+  DATA=DEFAULT_DATA.map(function(d){return JSON.parse(JSON.stringify(d));});
+  showQuiz();
+  totalC=0;totalW=0;totalXP=0;xp=0;allMisses=[];
+  startLevel(1);
+});
+wire("tv-cancel",showQuiz);
+
+var TYPES=["geo","his","con","src"];
+var TYPE_LABELS={"geo":"Geography","his":"History","con":"Concept","src":"Source"};
+
+function renderEditor(){
+  var list=document.getElementById("qlist");list.innerHTML="";
+  DATA.forEach(function(d,i){renderCard(d,i,list);});
+}
+
+function renderCard(d,i,list){
+  var wrap=document.createElement("div");wrap.className="qcard";
+  var hdr=document.createElement("div");hdr.className="qcard-header";
+  var tagHtml=d.multi?'<span class="qcard-tag">MULTI</span>':(d.img?'<span class="qcard-tag">IMG</span>':'');
+  hdr.innerHTML='<span class="qcard-num">Q'+(i+1)+'</span><span class="qcard-preview">'+escHtml(d.q)+'</span>'+tagHtml+'<span class="qcard-lv">Lv '+d.lv+'</span><button class="qcard-del">Delete</button>';
+  wrap.appendChild(hdr);
+  var body=document.createElement("div");body.className="qcard-body";
+
+  var lb=document.createElement("div");lb.innerHTML='<div class="field-label">Level</div>';
+  var lps=document.createElement("div");lps.className="lv-pills";
+  [1,2,3,4,5].forEach(function(n){
+    var p=document.createElement("div");p.className="lv-pill"+(d.lv===n?" active":"");
+    p.textContent="Level "+n;
+    p.addEventListener("click",function(){d.lv=n;lps.querySelectorAll(".lv-pill").forEach(function(x){x.classList.remove("active");});p.classList.add("active");hdr.querySelector(".qcard-lv").textContent="Lv "+n;});
+    lps.appendChild(p);
+  });
+  lb.appendChild(lps);body.appendChild(lb);
+
+  var tb=document.createElement("div");tb.innerHTML='<div class="field-label">Type</div>';
+  var tps=document.createElement("div");tps.className="type-pills";
+  TYPES.forEach(function(tp){
+    var p=document.createElement("div");p.className="type-pill"+(d.t===tp?" active":"");
+    p.textContent=TYPE_LABELS[tp];
+    p.addEventListener("click",function(){d.t=tp;tps.querySelectorAll(".type-pill").forEach(function(x){x.classList.remove("active");});p.classList.add("active");});
+    tps.appendChild(p);
+  });
+  tb.appendChild(tps);body.appendChild(tb);
+
+  body.appendChild(makeField("Question",d.q,function(v){d.q=v;hdr.querySelector(".qcard-preview").textContent=v;}));
+  if(d.img!==undefined){
+    body.appendChild(makeField("Image URL (optional)",d.img||"",function(v){d.img=v;}));
+    body.appendChild(makeField("Image caption",d.imgCap||"",function(v){d.imgCap=v;}));
+  }
+  if(d.multi){
+    body.appendChild(makeField("Correct answer 1",d.a[0]||"",function(v){d.a[0]=v;}));
+    body.appendChild(makeField("Correct answer 2",d.a[1]||"",function(v){d.a[1]=v;}));
+  } else {
+    body.appendChild(makeField("Correct answer",d.a,function(v){d.a=v;}));
+  }
+
+  var ob=document.createElement("div");
+  ob.innerHTML='<div class="field-label" style="margin-bottom:6px">Wrong options</div>';
+  var og=document.createElement("div");og.className="opts-grid";
+  var wrongCount=d.multi?3:3;
+  for(var j=0;j<wrongCount;j++){(function(j){
+    var ow=document.createElement("div");ow.className="opt-wrap";
+    var lbl=document.createElement("div");lbl.className="field-label";lbl.textContent="Option "+(j+1);
+    var inp=document.createElement("input");inp.className="field-input";inp.type="text";inp.value=d.x&&d.x[j]||"";
+    inp.addEventListener("input",function(){if(!d.x)d.x=[];d.x[j]=inp.value;});
+    ow.appendChild(lbl);ow.appendChild(inp);og.appendChild(ow);
+  })(j);}
+  ob.appendChild(og);body.appendChild(ob);
+  body.appendChild(makeTextarea("Explanation note",d.note||"",function(v){d.note=v;}));
+  wrap.appendChild(body);
+
+  hdr.addEventListener("click",function(e){if(e.target.classList.contains("qcard-del"))return;body.classList.toggle("open");});
+  hdr.querySelector(".qcard-del").addEventListener("click",function(e){e.stopPropagation();if(confirm("Delete this question?")){DATA.splice(i,1);renderEditor();}});
+  list.appendChild(wrap);
+}
+
+function makeField(label,val,onChange){
+  var w=document.createElement("div");
+  var l=document.createElement("div");l.className="field-label";l.textContent=label;
+  var inp=document.createElement("input");inp.className="field-input";inp.type="text";inp.value=val;
+  inp.addEventListener("input",function(){onChange(inp.value);});
+  w.appendChild(l);w.appendChild(inp);return w;
+}
+function makeTextarea(label,val,onChange){
+  var w=document.createElement("div");
+  var l=document.createElement("div");l.className="field-label";l.textContent=label;
+  var ta=document.createElement("textarea");ta.className="field-input";ta.value=val;ta.rows=3;
+  ta.addEventListener("input",function(){onChange(ta.value);});
+  w.appendChild(l);w.appendChild(ta);return w;
+}
+
+wire("add-btn",function(){
+  DATA.push({lv:1,t:"geo",q:"New question",a:"Correct answer",x:["Wrong 1","Wrong 2","Wrong 3"],note:""});
+  renderEditor();
+  var cards=document.querySelectorAll(".qcard-body");
+  if(cards.length)cards[cards.length-1].classList.add("open");
+  document.getElementById("tv-scroll").scrollTop=999999;
+});
+
+function escHtml(s){return(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+function wire(id,fn){
+  var el=document.getElementById(id);if(!el)return;
+  el.addEventListener("touchend",function(e){e.preventDefault();fn();},{passive:false});
+  el.addEventListener("click",fn);
+}
+
+startLevel(1);
+</script>
+</body>
+</html>
